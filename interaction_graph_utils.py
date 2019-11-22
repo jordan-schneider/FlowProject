@@ -29,6 +29,21 @@ def generate_graph(sanitized_obs) -> Dict[str, List[str]]:
     raise NotImplementedError
 
 
+# TODO(williammacke): Decide if you want a single neighbor weight or something more sophisticated.
+def calculate_adjusted_rewards(
+    raw_rewards: Dict[str, float],
+    interaction_graph: Dict[str, List[str]],
+    neigbhor_weight: float,
+) -> Dict[str, float]:
+    """ Adjusts the raw reward to include the rewards of your neighbors.
+    
+    @param raw_rewards dict mapping from an agent's name to its base reward this timestep
+    @param interaction_graph mapping from an agent's name to a list of its neighbors
+    @param neighbor_weight how much to weight your neighbor's rewards relative to your own
+    """
+    raise NotADirectoryError
+
+
 def calculate_expected_return(
     interaction_graph: Dict[str, List[str]],
     sp: ObsType,
