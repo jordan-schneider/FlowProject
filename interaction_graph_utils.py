@@ -28,6 +28,28 @@ def generate_graph(sanitized_obs) -> Dict[str, List[str]]:
     """
     raise NotImplementedError
 
+def generate_graph_from_env(env):
+    """
+    generates the interaction graph from a MultiTrafficLightGridPOEnv
+    @param env the environment
+    """
+    directions = env.direction.flatten()
+    num_ids = len(env.k.traffic_light-get_ids()_)
+    graph = np.zeros(shape=(num_ids, num_ids), dtype=int)
+    for rl_id in env.k.traffic_light.get_ids():
+        rl_id_num = int(rl_id..split("center")[1])
+        direction = directions[rl_id_num]
+        if direction == 0:
+            top =  env._get_relative_node(rl_id, "top")
+            bottom = env._get_relative_node(rl_id, "bottom")
+            graph[rl_id_num][top] = 1
+            graph[rl_id_num][bottom] = 1
+        else:
+            left = env._get_relative_node(rl_id, "left")
+            right = env._get_relative_node(rl_id, "right")
+            graph[rl_id_num][left] = 1
+            graph[rl_id_num][right] = 1
+    return graph
 
 def calculate_expected_return(
     interaction_graph: Dict[str, List[str]],
