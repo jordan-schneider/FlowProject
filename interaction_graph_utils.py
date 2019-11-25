@@ -34,10 +34,10 @@ def generate_graph_from_env(env):
     @param env the environment
     """
     directions = env.direction.flatten()
-    num_ids = len(env.k.traffic_light-get_ids()_)
+    num_ids = len(env.k.traffic_light.get_ids())
     graph = np.zeros(shape=(num_ids, num_ids), dtype=int)
     for rl_id in env.k.traffic_light.get_ids():
-        rl_id_num = int(rl_id..split("center")[1])
+        rl_id_num = int(rl_id.split("center")[1])
         direction = directions[rl_id_num]
         if direction == 0:
             top =  env._get_relative_node(rl_id, "top")
