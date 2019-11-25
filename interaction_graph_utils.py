@@ -42,13 +42,17 @@ def generate_graph_from_env(env):
         if direction == 0:
             top =  env._get_relative_node(rl_id, "top")
             bottom = env._get_relative_node(rl_id, "bottom")
-            graph[rl_id_num][top] = 1
-            graph[rl_id_num][bottom] = 1
+            if top > 0: 
+                graph[rl_id_num][top] = 1
+            if bottom > 0: 
+                graph[rl_id_num][bottom] = 1
         else:
             left = env._get_relative_node(rl_id, "left")
             right = env._get_relative_node(rl_id, "right")
-            graph[rl_id_num][left] = 1
-            graph[rl_id_num][right] = 1
+            if left > 0:
+                graph[rl_id_num][left] = 1
+            if right > 0:
+                graph[rl_id_num][right] = 1
     return graph
 
 def calculate_expected_return(
