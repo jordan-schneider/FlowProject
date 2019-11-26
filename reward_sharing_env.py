@@ -1,11 +1,6 @@
 from typing import Dict
 
 from flow.flow.envs.multiagent.traffic_light_grid import MultiTrafficLightGridPOEnv
-from interaction_graph_utils import (
-    calculate_adjusted_rewards,
-    generate_graph,
-    sanitize_observation,
-)
 
 
 class RewardSharingEnv(MultiTrafficLightGridPOEnv):
@@ -16,17 +11,38 @@ class RewardSharingEnv(MultiTrafficLightGridPOEnv):
         self.neighbor_weight = neighbor_weight
 
     def compute_reward(self, rl_actions, **kwargs):
-        """ Computes reward for each agent by adjusting base reward to consider neighbor's rewards"""
+        """ Adjusts the raw reward to include the rewards of your neighbors.
+
+        @returns a mapping from an agent's name to its sharing adjusted reward
+        """
         raw_rewards: Dict[str, float] = self.super(rl_actions, **kwargs)
-        interaction_graph = generate_graph(
-            sanitize_observation(
-                obs=self.get_state(),
-                num_edges=self.num_local_edges,
-                num_traffic_lights=self.num_local_lights,
-            )
-        )
-        return calculate_adjusted_rewards(
-            raw_rewards=raw_rewards,
-            interaction_graph=interaction_graph,
-            neigbhor_weight=self.neigbhor_weight,
-        )
+
+        adjusted_rewards: Dict[str, float] = dict()
+
+        directions = self.direction.flatten()
+        for rl_id in raw_rewards.keys():
+            adjusted_rewards[rl_id] = raw_rewards[rl_id]
+
+            rl_id_num = self.__get_id_num_from_name(rl_id)
+            direction = directions[rl_id_num]
+            if direction == 0:
+                top = self._get_relative_node(rl_id, "top")
+                bottom = self._get_relative_node(rl_id, "bottom")
+                if top > 0:
+                    adjusted_rewards[rl_id] += raw_rewards[top] * self.neighbor_weight
+                if bottom > 0:
+                    adjusted_rewards[rl_id] += (
+                        raw_rewards[bottom] * self.neighbor_weight
+                    )
+            else:
+                left = self._get_relative_node(rl_id, "left")
+                right = self._get_relative_node(rl_id, "right")
+                if left > 0:
+                    adjusted_rewards[rl_id] += raw_rewards[left] * self.neighbor_weight
+                if right > 0:
+                    adjusted_rewards[rl_id] += raw_rewards[right] * self.neighbor_weight
+        return adjusted_rewards
+
+    @staticmethod
+    def __get_id_num_from_name(name: str) -> int:
+        return int(name.split("center")[1])
