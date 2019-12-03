@@ -17,6 +17,7 @@ from flow.networks import TrafficLightGridNetwork
 from flow.utils.registry import make_create_env
 from flow.utils.rllib import FlowParamsEncoder
 from reward_sharing_env import RewardSharingEnv
+from reward_sharing_env_neighborhoods import RewardSharingEnvSimple
 
 try:
     from ray.rllib.agents.agent import get_agent_class
@@ -96,7 +97,7 @@ def make_flow_params(n_rows, n_columns, edge_inflow):
         # name of the experiment
         exp_tag="grid_0_{}x{}_i{}_multiagent".format(n_rows, n_columns, edge_inflow),
         # name of the flow environment the experiment is running on
-        env_name=RewardSharingEnv,
+        env_name=RewardSharingEnvSimple,
         # name of the network class the experiment is running on
         network=TrafficLightGridNetwork,
         # simulator that is used by the experiment
@@ -147,6 +148,10 @@ def make_flow_params(n_rows, n_columns, edge_inflow):
     )
     return flow_params
 
+def on_episode_end(info):
+    env = info['env'].get_unwrapped()[0]
+    episode = info['episode']
+    episode.custom_metrics['raw_reward'] = env.raw_reward
 
 def setup_exps_PPO(flow_params):
     """
@@ -177,6 +182,7 @@ def setup_exps_PPO(flow_params):
     config["horizon"] = HORIZON
     config["clip_actions"] = False  # FIXME(ev) temporary ray bug
     config["observation_filter"] = "NoFilter"
+    config["callbacks"] = {'on_episode_end':tune.function(on_episode_end)}
 
     # save the flow params for replay
     flow_json = json.dumps(flow_params, cls=FlowParamsEncoder, sort_keys=True, indent=4)
