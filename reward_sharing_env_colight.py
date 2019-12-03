@@ -1,11 +1,12 @@
 from typing import Dict
 import operator
 import math
+import numpy as np
 
 from flow.envs.multiagent.traffic_light_grid import MultiTrafficLightGridPOEnv
 
 
-class RewardSharingEnv(MultiTrafficLightGridPOEnv):
+class RewardSharingEnvColight(MultiTrafficLightGridPOEnv):
     """ Multiagent traffic light grid environment with Colight reward sharing pattern """
 
     def __init__(self, env_params, sim_params, network, simulator="traci"):
@@ -19,6 +20,7 @@ class RewardSharingEnv(MultiTrafficLightGridPOEnv):
         assert isinstance(
             self.temperature_factor, float
         ), "Temperature factor must be a float."
+        self.raw_reward = 0
 
     def compute_reward(self, rl_actions, **kwargs):
         """ Adjusts the raw reward to include the rewards of not only neighbors, but also intersections with certain distrance from target agent.
@@ -26,8 +28,9 @@ class RewardSharingEnv(MultiTrafficLightGridPOEnv):
         @returns a mapping from an agent's name to its sharing adjusted reward
         """
         raw_rewards: Dict[str, float] = super().compute_reward(rl_actions, **kwargs)
-        adjusted_rewards: Dict[str, float] = dict()
 
+        adjusted_rewards: Dict[str, float] = dict()
+        self.raw_reward += np.sum([raw_rewards[k] for k in raw_rewards])
         for rl_id in raw_rewards.keys():
             adjusted_rewards[rl_id] = 0
             rl_id_num = self.__get_id_num_from_name(rl_id)
@@ -79,3 +82,8 @@ class RewardSharingEnv(MultiTrafficLightGridPOEnv):
             kNN_importance[neighbor_id] = math.exp(kNN_importance[neighbor_id]/tau) / softmax_normalizer
 
         return kNN_importance
+
+    def reset(self):
+        obs = super().reset()
+        self.raw_reward = 0
+        return obs

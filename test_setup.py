@@ -18,6 +18,7 @@ from flow.utils.registry import make_create_env
 from flow.utils.rllib import FlowParamsEncoder
 from reward_sharing_env import RewardSharingEnv
 from reward_sharing_env_neighborhoods import RewardSharingEnvSimple
+from reward_sharing_env_colight import RewardSharingEnvColight
 
 try:
     from ray.rllib.agents.agent import get_agent_class
@@ -97,7 +98,7 @@ def make_flow_params(n_rows, n_columns, edge_inflow):
         # name of the experiment
         exp_tag="grid_0_{}x{}_i{}_multiagent".format(n_rows, n_columns, edge_inflow),
         # name of the flow environment the experiment is running on
-        env_name=RewardSharingEnvSimple,
+        env_name=RewardSharingEnvColight,
         # name of the network class the experiment is running on
         network=TrafficLightGridNetwork,
         # simulator that is used by the experiment
@@ -116,6 +117,8 @@ def make_flow_params(n_rows, n_columns, edge_inflow):
                 "num_local_edges": 4,
                 "num_local_lights": 4,
                 "neighbor_weight": 0.1,
+                "k_nearest_neighbor": 4,
+                "temperature_factor": 0.5
             },
         ),
         # network-related parameters (see flow.core.params.NetParams and the
