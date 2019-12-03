@@ -97,7 +97,7 @@ def make_flow_params(n_rows, n_columns, edge_inflow):
         # name of the experiment
         exp_tag="grid_0_{}x{}_i{}_multiagent".format(n_rows, n_columns, edge_inflow),
         # name of the flow environment the experiment is running on
-        env_name=RewardSharingEnvSimple,
+        env_name=RewardSharingEnv,
         # name of the network class the experiment is running on
         network=TrafficLightGridNetwork,
         # simulator that is used by the experiment

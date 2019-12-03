@@ -1,6 +1,7 @@
 from typing import Dict
 
 from flow.envs.multiagent.traffic_light_grid import MultiTrafficLightGridPOEnv
+import numpy as np
 
 
 class RewardSharingEnv(MultiTrafficLightGridPOEnv):
@@ -12,6 +13,7 @@ class RewardSharingEnv(MultiTrafficLightGridPOEnv):
         assert isinstance(
             self.neighbor_weight, float
         ), "Neighbor weight must be a float."
+        self.raw_reward = 0
 
     def compute_reward(self, rl_actions, **kwargs):
         """ Adjusts the raw reward to include the rewards of your neighbors.
@@ -21,6 +23,7 @@ class RewardSharingEnv(MultiTrafficLightGridPOEnv):
         raw_rewards: Dict[str, float] = super().compute_reward(rl_actions, **kwargs)
 
         adjusted_rewards: Dict[str, float] = dict()
+        self.raw_reward += np.sum([raw_rewards[k] for k in raw_rewards])
 
         directions = self.direction.flatten()
         for rl_id in raw_rewards.keys():
@@ -55,3 +58,8 @@ class RewardSharingEnv(MultiTrafficLightGridPOEnv):
     @staticmethod
     def __get_name_from_id(rl_id: int) -> str:
         return f"center{rl_id}"
+
+    def reset(self):
+        obs = super().reset()
+        self.raw_reward = 0
+        return obs
