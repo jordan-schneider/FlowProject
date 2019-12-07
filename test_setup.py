@@ -42,7 +42,7 @@ SHORT_LENGTH = 300  # length of edges that vehicles start on
 N_LEFT, N_RIGHT, N_TOP, N_BOTTOM = 1, 1, 1, 1
 
 
-def make_flow_params(n_rows, n_columns, edge_inflow):
+def make_flow_params(n_rows, n_columns, edge_inflow, exp_env=BasicEnv, colight_k_nearest_neighbords=5, colight_temperature=0.5, neighbor_weight=0.1):
     """
     Generate the flow params for the experiment.
 
@@ -100,7 +100,7 @@ def make_flow_params(n_rows, n_columns, edge_inflow):
         # name of the experiment
         exp_tag="grid_0_{}x{}_i{}_multiagent".format(n_rows, n_columns, edge_inflow),
         # name of the flow environment the experiment is running on
-        env_name=RewardSharingEnvSimple,
+        env_name=exp_env,
         # name of the network class the experiment is running on
         network=TrafficLightGridNetwork,
         # simulator that is used by the experiment
@@ -118,9 +118,9 @@ def make_flow_params(n_rows, n_columns, edge_inflow):
                 "tl_type": "static",
                 "num_local_edges": 4,
                 "num_local_lights": 4,
-                "neighbor_weight": 0.1,
-                "k_nearest_neighbor": 9,
-                "temperature_factor": 0.5
+                "neighbor_weight": neighbor_weight,
+                "k_nearest_neighbor": colight_k_nearest_neighbords,
+                "temperature_factor": colight_temperature
             },
         ),
         # network-related parameters (see flow.core.params.NetParams and the
@@ -270,13 +270,37 @@ if __name__ == "__main__":
         default=300,
         help="The inflow rate (veh/hr) per edge.",
     )
+    parser.add_argument('--env'
+            default='BasicEnv',
+            choices=['BasicEnv', 'RewardSharingEnv', 'RewardSharingEnvSimple', 'RewardSharingEnvColight'],
+            help='The environment to use to run the simulation')
+    parser.add_argument('--k_nearest',
+            type=int,
+            default=5
+            help='The number of nearest neighbors to be used for colight')
+    parser.add_argument('--temp',
+            type=float,
+            default=0.5
+            help='The temperature to be used for colight')
+    parser.add_argument('--neighbor_weight',
+            type=float,
+            default=0.1
+            help='The neighbor weight used for reward sharing')
+    parser.add_argument('--password',
+            default='password.txt'
+            help='Password file to be used for redis')
     args = parser.parse_args()
+    envs = {'BasicEnv':BasicEnv,
+            'RewardSharingEnv': RewardSharingEnv,
+            'RewardSharingEnvSimple':RewardSharingEnvSimple,
+            'RewardSharingEnvColight':RewardSharingEnvColight
+            }
 
     EDGE_INFLOW = args.inflow_rate  # inflow rate of vehicles at every edge
     N_ROWS = args.num_rows  # number of row of bidirectional lanes
     N_COLUMNS = args.num_cols  # number of columns of bidirectional lanes
 
-    flow_params = make_flow_params(N_ROWS, N_COLUMNS, EDGE_INFLOW)
+    flow_params = make_flow_params(N_ROWS, N_COLUMNS, EDGE_INFLOW, exp_env=envs[args.env])
 
     upload_dir = args.upload_dir
     RUN_MODE = args.run_mode
