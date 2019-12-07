@@ -19,6 +19,8 @@ from flow.utils.rllib import FlowParamsEncoder
 from reward_sharing_env import RewardSharingEnv
 from reward_sharing_env_neighborhoods import RewardSharingEnvSimple
 from reward_sharing_env_colight import RewardSharingEnvColight
+from flow.envs.multiagent.traffic_light_grid import MultiTrafficLightGridPOEnv
+from basic_env import BasicEnv
 
 try:
     from ray.rllib.agents.agent import get_agent_class
@@ -117,7 +119,7 @@ def make_flow_params(n_rows, n_columns, edge_inflow):
                 "num_local_edges": 4,
                 "num_local_lights": 4,
                 "neighbor_weight": 0.1,
-                "k_nearest_neighbor": 4,
+                "k_nearest_neighbor": 9,
                 "temperature_factor": 0.5
             },
         ),
@@ -181,7 +183,7 @@ def setup_exps_PPO(flow_params):
     config["simple_optimizer"] = True
     config["gamma"] = 0.999  # discount rate
     config["model"].update({"fcnet_hiddens": [32, 32]})
-    config["lr"] = tune.grid_search([1e-5, 1e-4, 1e-3])
+    config["lr"] = tune.grid_search([1e-4])
     config["horizon"] = HORIZON
     config["clip_actions"] = False  # FIXME(ev) temporary ray bug
     config["observation_filter"] = "NoFilter"
@@ -285,8 +287,11 @@ if __name__ == "__main__":
     else:
         raise NotImplementedError
 
+    with open('password.txt' ,'r') as f:
+        password = f.readline()
+
     if RUN_MODE == "local":
-        ray.init(num_cpus=N_CPUS + 1)
+        ray.init(num_cpus=N_CPUS + 1, redis_password=password)
         N_ITER = 1000
     elif RUN_MODE == "cluster":
         ray.init(redis_address="localhost:6379")
