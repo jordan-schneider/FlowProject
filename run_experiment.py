@@ -18,7 +18,7 @@ from flow.utils.registry import make_create_env
 from flow.utils.rllib import FlowParamsEncoder
 from reward_sharing_env import RewardSharingEnv
 from reward_sharing_env_neighborhoods import RewardSharingEnvSimple
-from reward_sharing_env_colight import RewardSharingEnvColight
+from reward_sharing_env_knn import RewardSharingEnvKNN
 from flow.envs.multiagent.traffic_light_grid import MultiTrafficLightGridPOEnv
 from basic_env import BasicEnv
 
@@ -270,30 +270,30 @@ if __name__ == "__main__":
         default=300,
         help="The inflow rate (veh/hr) per edge.",
     )
-    parser.add_argument('--env'
+    parser.add_argument('--env',
             default='BasicEnv',
             choices=['BasicEnv', 'RewardSharingEnv', 'RewardSharingEnvSimple', 'RewardSharingEnvColight'],
             help='The environment to use to run the simulation')
     parser.add_argument('--k_nearest',
             type=int,
-            default=5
+            default=5,
             help='The number of nearest neighbors to be used for colight')
     parser.add_argument('--temp',
             type=float,
-            default=0.5
+            default=0.5,
             help='The temperature to be used for colight')
     parser.add_argument('--neighbor_weight',
             type=float,
-            default=0.1
+            default=0.1,
             help='The neighbor weight used for reward sharing')
     parser.add_argument('--password',
-            default='password.txt'
+            default='password.txt',
             help='Password file to be used for redis')
     args = parser.parse_args()
     envs = {'BasicEnv':BasicEnv,
             'RewardSharingEnv': RewardSharingEnv,
             'RewardSharingEnvSimple':RewardSharingEnvSimple,
-            'RewardSharingEnvColight':RewardSharingEnvColight
+            'RewardSharingEnvKNN':RewardSharingEnvKNN
             }
 
     EDGE_INFLOW = args.inflow_rate  # inflow rate of vehicles at every edge

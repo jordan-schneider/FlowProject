@@ -6,7 +6,7 @@ import numpy as np
 from flow.envs.multiagent.traffic_light_grid import MultiTrafficLightGridPOEnv
 
 
-class RewardSharingEnvColight(MultiTrafficLightGridPOEnv):
+class RewardSharingEnvKNN(MultiTrafficLightGridPOEnv):
     """ Multiagent traffic light grid environment with Colight reward sharing pattern """
 
     def __init__(self, env_params, sim_params, network, simulator="traci"):
